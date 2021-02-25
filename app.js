@@ -8,28 +8,21 @@ const config = require("config");
 const router = require("./router");
 const bodyParser = require("body-parser");
 const CryptoJS = require("crypto-js");
-const cors = require('cors');
-const {
-  addUser,
-  removeUser,
-  getUser,
-  getUsersInRoom,
-  getUsersInRoomAndName,
-} = require("./users");
+const cors = require("cors");
+const { addUser, removeUser, getUser, getUsersInRoom } = require("./users");
 const mongoClient = require("mongodb").MongoClient;
 
 var corsOptions = {
-  origin: '*',
-  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
-}
+  origin: "*",
+  optionsSuccessStatus: 200,
+};
+let clients = [];
+var roombase; //Переменная подключение к базе сообщений;
+var userbase; //Переменная подключение к базе непрочитанних сообщений пользователя;;
 
 //Настройка сервера из config файла
 const oneseLoadedMessage = config.onesLoadedMessage; //Количество подгружаемих сообщений за раз;
 const url = config.databaseUrlMIX; //Ссылка на подключение к базе данных;
-
-//Переменние для работи с БД
-var roombase; //Переменная подключение к базе сообщений;
-var userbase; //Переменная подключение к базе непрочитанних сообщений пользователя;;
 
 //Установка соиденения с базой данных
 mongoClient.connect(
@@ -108,57 +101,28 @@ function httpsWorker(glx) {
       callback();
     });
 
-
-
     /*
         Обработка нового собщения
     */
     socket.on("sendMessage", async ({ message, messageType }, callback) => {
       const user = getUser(socket.id); //Получаем отправителя
-      let currDate = new Date(); //Время получения сообщения
 
-      let serverMesage = {
-        name: user.name,
-        text: message,
-        messageType: messageType,
-        sendDate: currDate,
-      }; //Данные для занесения в БД
-      await roombase
-        .collection(user.room)
-        .insertOne(serverMesage, function () {}); //Запись в БД
+      await sendingMessage(user.username, user.room, message, messageType);
 
-      //Уведомить пользователей о новом сообщении
-      let Message = await roombase.collection(user.room);
-      let users = clients.filter((client) => client.room === user.room);
-      let colOfMessage = await Message.countDocuments();
-      users.forEach(async (element) => {
-          let unr = await countUnreaded(
-            element.username,
-            element.room,
-            colOfMessage
-          );
-          const data = `data: ${JSON.stringify(unr)}\n\n`;
-          element.res.write(data);
-      });
-
-      //Отправить текст собщения остальным пользователям
-      io.to(user.room).emit("message", {
-        user: user.name,
-        text: message,
-        type: messageType,
-        date: currDate,
-      });
-
+      //Уведомляем отправителя об успешной отправке
       callback();
     });
 
     /*
-      Обработка событий socket.io
+      Обработка смены состояния модального окна
     */
     socket.on("setOpend", async ({ status }) => {
       resetOpend(status);
     });
 
+    /*
+      Задание состояния модального окна
+    */
     const resetOpend = async (status) => {
       const user = getUser(socket.id);
       user.opend = status;
@@ -166,23 +130,26 @@ function httpsWorker(glx) {
     };
 
     /*
-    Обработка событий socket.io
-*/
+      Сброс количества непрочитанних сообщений
+    */
     const saveReadedMsa = async (name, room) => {
-      let col = await roombase.collection(room).countDocuments();
+      let col = await roombase.collection(room).countDocuments(); //Получаем количество сообщений в комнате
       let serverMesage = {
-        username:name,
-        room:room,
+        username: name,
+        room: room,
         lastread: col,
-      };
+      }; //Данные для сохранения
       await userbase
         .collection("user_unreaded_messages")
-        .findOneAndUpdate({username:name, room:room}, { $set: serverMesage }, function () {});
+        .findOneAndUpdate(
+          { username: name, room: room },
+          { $set: serverMesage }
+        ); //Запись в БД
     };
 
     /*
-    Обработка событий socket.io
-*/
+      Подгрузка нового блока старых сообщений
+    */
     socket.on("load-old", async (col) => {
       const user = getUser(socket.id);
       let Message = roombase.collection(user.room);
@@ -202,8 +169,8 @@ function httpsWorker(glx) {
     });
 
     /*
-    Обработка событий socket.io
-*/
+      Отключение пользователя
+    */
     socket.on("disconnect", async () => {
       const user = removeUser(socket.id);
 
@@ -220,7 +187,40 @@ function httpsWorker(glx) {
     });
   });
 
-  app.post("/sendServiceMessage",async (req, res) => {
+  const sendingMessage = async ({ name, room, message, type }) => {
+    let currDate = new Date(); //Время получения сообщения
+
+    let serverMesage = {
+      name: name,
+      text: message,
+      messageType: type,
+      sendDate: currDate,
+    }; //Данные для занесения в БД
+    await roombase.collection(room).insertOne(serverMesage, function () {}); //Запись в БД
+
+    //Уведомить пользователей о новом сообщении
+    let Message = await roombase.collection(room);
+    let users = clients.filter((client) => client.room === room);
+    let colOfMessage = await Message.countDocuments();
+    users.forEach(async (element) => {
+      await countUnreaded(
+        element.username,
+        element.room,
+        colOfMessage,
+        element.res
+      );
+    });
+
+    //Отправить текст собщения остальным пользователям
+    io.to(room).emit("message", {
+      user: name,
+      text: message,
+      type: type,
+      date: currDate,
+    });
+  };
+
+  app.post("/sendServiceMessage", async (req, res) => {
     var CryptoJS = require("crypto-js");
     let hmac = CryptoJS.HmacSHA256(
       req.body.name + req.body.room + req.body.message,
@@ -228,32 +228,19 @@ function httpsWorker(glx) {
     ).toString(CryptoJS.enc.Hex);
 
     if (req.body.secret === hmac) {
-      let currDate = new Date();
-      let serverMesage = {
-        name: req.body.name,
-        text: req.body.message,
-        messageType: "text",
-        sendDate: currDate,
-      };
-      await roombase
-        .collection(req.body.room)
-        .insertOne(serverMesage, function () {});
-      io.to(req.body.room).emit("message", {
-        user: req.body.name,
-        text: req.body.message,
-        type: "text",
-        date: currDate,
-      });
-
+      await sendingMessage(
+        req.body.name,
+        req.body.room,
+        req.body.message,
+        "text"
+      );
       res.status(204).send();
+    } else {
+      res.status(400).send();
     }
-    res.status(400).send();
   });
 
-  let clients = [];
-
-  app.get("/stream/:name&:room",cors(corsOptions), async function (req, res) {
-    console.log("Stream");
+  app.get("/stream/:name&:room", cors(corsOptions), async function (req, res) {
     const headers = {
       "Content-Type": "text/event-stream",
       Connection: "keep-alive",
@@ -270,42 +257,45 @@ function httpsWorker(glx) {
       res: res,
     };
     clients.push(newClient);
+
     const intervalId = setInterval(() => {
       res.flushHeaders();
     }, 60 * 1000);
-    let unr = await countUnreaded(req.params.name, req.params.room);
-    const data = `data: ${JSON.stringify(unr)}\n\n`;
-    res.write(data);
+
+    await countUnreaded(req.params.name, req.params.room, res);
+
     req.on("close", () => {
       clients = clients.filter((c) => c.id !== clientId);
       clearInterval(intervalId);
     });
   });
 
-  const countUnreaded = async (name, room, max) => {
-    console.log("Start");
-    let Message =  roombase.collection(room);
-    let User =  userbase.collection("user_unreaded_messages");
+  const countUnreaded = async (name, room, max, receiver) => {
+    let unreaded;
+    let Message = roombase.collection(room);
+    let User = userbase.collection("user_unreaded_messages");
 
     let colOfMessage = max ? max : await Message.countDocuments();
     let col = colOfMessage;
-    let userInfo =  await User.findOne({username:name, room:room});
-    
+    let userInfo = await User.findOne({ username: name, room: room });
+
     console.log(userInfo);
 
     if (!userInfo) {
       let serverMesage = {
-        username:name,
-        room:room,
+        username: name,
+        room: room,
         lastread: col,
       };
       await User.insertOne(serverMesage, function () {});
-      return 0;
+      unreaded = 0;
     } else {
       userInfo = userInfo.lastread;
-      let unreaded = colOfMessage - userInfo;
-      return unreaded;
+      unreaded = colOfMessage - userInfo;
     }
+
+    const data = `data: ${JSON.stringify(unreaded)}\n\n`;
+    receiver.write(data);
   };
 }
 module.exports = httpsWorker;
