@@ -107,6 +107,7 @@ var onModalHide = function () {
 };
 
 var onModalOpen = function () {
-  saveInCookie(0);
+  div_btn.setAttribute("data-badge", 0);
+  saveInCookie(0)
   eventSource.close();
 };
