@@ -51,7 +51,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use('/files', express.static('public'));
 
-app.listen(5000);
+//app.listen(5000);
 //Обработка собитий socket.IO
 io.on("connect", (socket) => {
   //Подключение пользователя к комнате
@@ -286,8 +286,8 @@ const countUnreaded = async (name, room, max) => {
   }
 };
 // eslint-disable-next-line no-undef
-/*server.listen(process.env.PORT || 443, () =>
+server.listen(process.env.PORT || 5000, () =>
   console.log("Server has started.")
-);*/
+);
 
 module.exports = app;
