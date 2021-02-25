@@ -273,8 +273,8 @@ function httpsWorker(glx) {
     const intervalId = setInterval(() => {
       res.flushHeaders();
     }, 60 * 1000);
-    let unr = await countUnreaded(req.params.name, req.params.room);
-    const data = `data: ${JSON.stringify(unr)}\n\n`;
+    //let unr = await countUnreaded(req.params.name, req.params.room);
+    const data = `data: ${JSON.stringify(10)}\n\n`;
     res.write(data);
     req.on("close", () => {
       clients = clients.filter((c) => c.id !== clientId);
