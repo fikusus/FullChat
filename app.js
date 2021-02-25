@@ -177,7 +177,7 @@ function httpsWorker(glx) {
       };
       await userbase
         .collection("user_unreaded_messages")
-        .findOneAndUpdate({}, { $set: serverMesage }, function () {});
+        .findOneAndUpdate({username:name, room:room}, { $set: serverMesage }, function () {});
     };
 
     /*
