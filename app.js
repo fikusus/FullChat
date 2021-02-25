@@ -18,6 +18,11 @@ const {
 } = require("./users");
 const mongoClient = require("mongodb").MongoClient;
 
+var corsOptions = {
+  origin: '*',
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+}
+
 //Настройка сервера из config файла
 const oneseLoadedMessage = config.onesLoadedMessage; //Количество подгружаемих сообщений за раз;
 const url = config.databaseUrlMIX; //Ссылка на подключение к базе данных;
@@ -233,7 +238,7 @@ function httpsWorker(glx) {
     });
   });
 
-  app.post("/sendServiceMessage", cors(),async (req, res) => {
+  app.post("/sendServiceMessage",async (req, res) => {
     var CryptoJS = require("crypto-js");
     let hmac = CryptoJS.HmacSHA256(
       req.body.name + req.body.room + req.body.message,
@@ -265,7 +270,7 @@ function httpsWorker(glx) {
 
   let clients = [];
 
-  app.get("/stream/:name&:room", async function (req, res) {
+  app.get("/stream/:name&:room",cors(corsOptions), async function (req, res) {
       console.log("Stream");
     const headers = {
       "Content-Type": "text/event-stream",
