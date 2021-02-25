@@ -196,6 +196,7 @@ function httpsWorker(glx) {
       messageType: type,
       sendDate: currDate,
     }; //Данные для занесения в БД
+    console.log(serverMesage);
     await roombase.collection(room).insertOne(serverMesage, function () {}); //Запись в БД
 
     //Уведомить пользователей о новом сообщении
