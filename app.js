@@ -187,11 +187,11 @@ function httpsWorker(glx) {
     });
   });
 
-  const sendingMessage = async ({ name, room, message, type }) => {
+  const sendingMessage = async ({ username, room, message, type }) => {
     let currDate = new Date(); //Время получения сообщения
 
     let serverMesage = {
-      name: name,
+      name: username,
       text: message,
       messageType: type,
       sendDate: currDate,
