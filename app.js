@@ -233,7 +233,7 @@ function httpsWorker(glx) {
     });
   });
 
-  app.post("/sendServiceMessage", async (req, res) => {
+  app.post("/sendServiceMessage", cors(),async (req, res) => {
     var CryptoJS = require("crypto-js");
     let hmac = CryptoJS.HmacSHA256(
       req.body.name + req.body.room + req.body.message,
