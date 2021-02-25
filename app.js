@@ -1,6 +1,6 @@
 'use strict';
 //Подключение внешних зависимостей
-const http = require("http");
+const https = require("http");
 const express = require("express");
 const socketio = require("socket.io");
 const cors = require("cors");
@@ -40,7 +40,7 @@ mongoClient.connect(
 
 //Настройка веб сервера
 const app = express();
-const server = http.createServer(app);
+const server = https.createServer(app);
 const io = socketio(server, {
   cors: {
     origin: "http://193.242.166.32:5000",
