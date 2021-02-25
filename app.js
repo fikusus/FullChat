@@ -50,6 +50,8 @@ app.use(router);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use('/files', express.static('public'));
+
+app.listen(5000);
 //Обработка собитий socket.IO
 io.on("connect", (socket) => {
   //Подключение пользователя к комнате
