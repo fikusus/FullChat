@@ -8,7 +8,7 @@ const config = require("config");
 const router = require("./router");
 const bodyParser = require("body-parser");
 const CryptoJS = require("crypto-js");
-const cors = require('cors')
+const cors = require('cors');
 const {
   addUser,
   removeUser,
@@ -47,6 +47,7 @@ function httpsWorker(glx) {
   const app = express();
   var server = glx.httpsServer();
   const io = socketio(server);
+  app.use(cors);
   app.use(router);
   app.use(bodyParser.urlencoded({ extended: false }));
   app.use(bodyParser.json());
