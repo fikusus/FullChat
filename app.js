@@ -193,8 +193,8 @@ function httpsWorker(glx) {
     let serverMesage = {
       name: username,
       text: message,
-      messageType: type,
-      sendDate: currDate,
+      type: type,
+      date: currDate,
     }; //Данные для занесения в БД
     console.log(serverMesage);
     await roombase.collection(room).insertOne(serverMesage, function () {}); //Запись в БД
@@ -213,12 +213,7 @@ function httpsWorker(glx) {
     });
 
     //Отправить текст собщения остальным пользователям
-    io.to(room).emit("message", {
-      user: name,
-      text: message,
-      type: type,
-      date: currDate,
-    });
+    io.to(room).emit("message", serverMesage);
   };
 
   app.post("/sendServiceMessage", async (req, res) => {
