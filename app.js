@@ -161,7 +161,7 @@ function httpsWorker(glx) {
 
     const resetOpend = async (status) => {
       const user = getUser(socket.id);
-      //user.opend = status;
+      user.opend = status;
       await saveReadedMsa(user.name, user.room);
     };
 
@@ -171,11 +171,12 @@ function httpsWorker(glx) {
     const saveReadedMsa = async (name, room) => {
       let col = await roombase.collection(room).countDocuments();
       let serverMesage = {
+        username:name,
+        room:room,
         lastread: col,
       };
-
       await userbase
-        .collection(name + " in " + room)
+        .collection("user_unreaded_messages")
         .findOneAndUpdate({}, { $set: serverMesage }, function () {});
     };
 
@@ -286,8 +287,11 @@ function httpsWorker(glx) {
 
     let colOfMessage = max ? max : await Message.countDocuments();
     let col = colOfMessage;
-    let userInfo = await User.findOne();
-    if (!userInfo) {
+    let userInfo = await User.findOne({username:name, room:room}, "col");
+
+    console.log(userInfo);
+
+   /* if (!userInfo) {
       let serverMesage = {
         lastread: col,
       };
@@ -298,7 +302,8 @@ function httpsWorker(glx) {
       userInfo = userInfo.lastread;
       let unreaded = colOfMessage - userInfo;
       return unreaded;
-    }
+    }*/
+    return 0;
   };
 }
 module.exports = httpsWorker;
