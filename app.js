@@ -22,7 +22,7 @@ var userbase; //Переменная подключение к базе непр
 
 //Настройка сервера из config файла
 const oneseLoadedMessage = config.onesLoadedMessage; //Количество подгружаемих сообщений за раз;
-const url = config.databaseUrlMIX; //Ссылка на подключение к базе данных;
+const url = config.databaseUrlLOCAL; //Ссылка на подключение к базе данных;
 
 //Установка соиденения с базой данных
 mongoClient.connect(
