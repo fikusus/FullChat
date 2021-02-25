@@ -187,7 +187,7 @@ function httpsWorker(glx) {
     });
   });
 
-  const sendingMessage = async ({ username, room, message, type }) => {
+  const sendingMessage = async ( username, room, message, type ) => {
     let currDate = new Date(); //Время получения сообщения
 
     let serverMesage = {
