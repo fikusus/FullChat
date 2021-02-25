@@ -284,8 +284,8 @@ const countUnreaded = async (name, room, max) => {
   }
 };
 // eslint-disable-next-line no-undef
-server.listen(process.env.PORT || 443, () =>
+/*server.listen(process.env.PORT || 443, () =>
   console.log("Server has started.")
-);
+);*/
 
 module.exports = app;

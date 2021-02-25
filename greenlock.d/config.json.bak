@@ -14,5 +14,13 @@
     "serverKeyType": "RSA-2048",
     "subscriberEmail": "penbox1234@gmail.com"
   },
-  "sites": []
+  "sites": [
+    {
+      "subject": "chat.tss2020.site",
+      "altnames": [
+        "chat.tss2020.site"
+      ],
+      "renewAt": 1
+    }
+  ]
 }
