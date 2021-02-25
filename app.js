@@ -262,7 +262,7 @@ function httpsWorker(glx) {
       res.flushHeaders();
     }, 60 * 1000);
 
-    await countUnreaded(req.params.name, req.params.room, res);
+    await countUnreaded(req.params.name, req.params.room,null , res);
 
     req.on("close", () => {
       clients = clients.filter((c) => c.id !== clientId);
