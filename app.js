@@ -39,20 +39,14 @@ mongoClient.connect(
 );
 
 //Настройка веб сервера
-function httpsWorker(glx) {
-console.log("Test");
 const app = express();
-var server = glx.httpsServer();
-//const server = https.createServer(app);
+const server = https.createServer(app);
 const io = socketio(server);
 app.use(router);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use('/files', express.static('public'));
-glx.serveApp(function(req, res) {
-    res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.end("Hello, World!\n\n💚 🔒.js");
-});
+
 //app.listen(5000);
 //Обработка собитий socket.IO
 io.on("connection", (socket) => {
@@ -292,5 +286,4 @@ const countUnreaded = async (name, room, max) => {
   console.log("Server has started.")
 );*/
 
-}
-module.exports = httpsWorker;
+module.exports = app;
