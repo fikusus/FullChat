@@ -1,20 +1,24 @@
-let base_link = "https://practical-meitner-9f815d.netlify.app/";
+let base_link = "https://chat.tss2020.site/client/";
 let button_id = document.currentScript.getAttribute("data-chat-id");
 let parametrs = JSON.parse(
   document.currentScript.getAttribute("data-chat-options")
 );
+
+
 
 let out_link =
   base_link +
   "?name=" +
   parametrs.person +
   "&room=" +
-  parametrs.room +
+  parametrs.room.replace("'", '`').replace('"', '`')  +
   "&room_id=" +
   parametrs.room_id +
   "&secret=" +
   parametrs.room_key;
 
+
+  console.log(out_link)
 var name = parametrs.person;
 var room = parametrs.room_id;
 
@@ -29,7 +33,7 @@ function getCookie(name) {
   return matches ? decodeURIComponent(matches[1]) : undefined;
 }
 
-let unreaded = getCookie(parametrs.room_id+"unreaded-chat-message");
+let unreaded = getCookie("unreaded-chat-message");
 
 if (!unreaded) {
   unreaded = 0;
@@ -37,7 +41,7 @@ if (!unreaded) {
 
 let head = window.document.getElementsByTagName("head")[0];
 
-let aFile = "https://mixchatserver.azurewebsites.net/upload/modalChatStyle.css";
+let aFile = "https://chat.tss2020.site/files/modalStyle.css";
 let style = window.document.createElement("link");
 style.href = aFile;
 style.rel = "stylesheet";
@@ -62,10 +66,10 @@ $("#" + button_id).on("click", function () {
     div.id = "demo-modal";
     div.innerHTML =
       "<div class='modal-content'>" +
-      "<a  class='modal-action modal-close' id = 'close-modal-btn'><span class='material-icons'> clear</span></a>" +
+      "<p class='modal-action modal-close' id = 'close-modal-btn'><span class='material-icons'> clear</span></p>" +
       "<iframe id='chat-iframe'  src='" +
       out_link +
-      "' width='468' height='700'></iframe></div>";
+      "'  frameborder='0'></iframe></div>";
     document.getElementsByClassName("container")[0].append(div);
     $(".modal").modal({
       complete: onModalHide,
@@ -74,43 +78,33 @@ $("#" + button_id).on("click", function () {
     cliked_times++;
   } else {
     document.getElementById("demo-modal").style.width = "468px";
-    div_btn.setAttribute("data-badge", "0");
-    document.cookie = parametrs.room_id+"unreaded-chat-message=0";
   }
 });
 
-async function doAjax() {
-  const result = await $.ajax({
-    url: "https://mixchatserver.azurewebsites.net/test",
-    data: { name: name, room: room },
-    method: "POST",
-  });
-  return result;
-}
-let timerId;
-startUnreadedHandling();
+reconnect();
 
-function setInCookie() {
-  doAjax().then(function (result) {
-    if (result !== unreaded) {
-      div_btn.setAttribute("data-badge", result);
-      document.cookie = parametrs.room_id+"unreaded-chat-message=" + result;
-    }
-  });
+function saveInCookie(result) {
+  if (result !== unreaded) {
+    div_btn.setAttribute("data-badge", result);
+    document.cookie = "unreaded-chat-message=" + result;
+  }
 }
+
+function reconnect() {
+  eventSource = new EventSource(
+    "https://chat.tss2020.site/stream/" + name + "&" + room
+  );
+  eventSource.onmessage = function (event) {
+    saveInCookie(event.data);
+  };
+}
+
 var onModalHide = function () {
   document.getElementById("demo-modal").style.display = "block";
   document.getElementById("demo-modal").style.width = "0px";
-  startUnreadedHandling();
+  reconnect();
 };
 
 var onModalOpen = function () {
-  clearTimeout(timerId);
+  eventSource.close();
 };
-
-function startUnreadedHandling() {
-  timerId = setTimeout(function tick() {
-    setInCookie();
-    timerId = setTimeout(tick, 2000); // (*)
-  }, 2000);
-}
