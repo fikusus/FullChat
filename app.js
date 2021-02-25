@@ -131,11 +131,7 @@ function httpsWorker(glx) {
       let Message = await roombase.collection(user.room);
       let users = clients.filter((client) => client.room === user.room);
       let colOfMessage = await Message.countDocuments();
-
       users.forEach(async (element) => {
-        if (
-          getUsersInRoomAndName(element.room, element.username).length === 0
-        ) {
           let unr = await countUnreaded(
             element.username,
             element.room,
@@ -143,10 +139,6 @@ function httpsWorker(glx) {
           );
           const data = `data: ${JSON.stringify(unr)}\n\n`;
           element.res.write(data);
-        } else {
-          const data = `data: ${JSON.stringify(0)}\n\n`;
-          element.res.write(data);
-        }
       });
 
       //Отправить текст собщения остальным пользователям
@@ -161,27 +153,16 @@ function httpsWorker(glx) {
     });
 
     /*
-    Обработка событий socket.io
-*/
+      Обработка событий socket.io
+    */
     socket.on("setOpend", async ({ status }) => {
       resetOpend(status);
     });
 
     const resetOpend = async (status) => {
       const user = getUser(socket.id);
-      user.opend = status;
+      //user.opend = status;
       await saveReadedMsa(user.name, user.room);
-      if (status) {
-        let users = clients.filter(
-          (client) => client.room === user.room && client.username === user.name
-        );
-        if (users.length > 0) {
-          users.forEach((element) => {
-            const data = `data: ${JSON.stringify(0)}\n\n`;
-            element.res.write(data);
-          });
-        }
-      }
     };
 
     /*
@@ -271,7 +252,6 @@ function httpsWorker(glx) {
   let clients = [];
 
   app.get("/stream/:name&:room",cors(corsOptions), async function (req, res) {
-      console.log("Stream");
     const headers = {
       "Content-Type": "text/event-stream",
       Connection: "keep-alive",

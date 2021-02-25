@@ -107,5 +107,6 @@ var onModalHide = function () {
 };
 
 var onModalOpen = function () {
+  saveInCookie(0);
   eventSource.close();
 };
