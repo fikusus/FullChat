@@ -40,7 +40,7 @@ mongoClient.connect(
 
 //Настройка веб сервера
 function httpsWorker(glx) {
-
+console.log("Test");
 const app = express();
 var server = glx.httpsServer();
 //const server = https.createServer(app);
@@ -49,10 +49,13 @@ app.use(router);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use('/files', express.static('public'));
-
+glx.serveApp(function(req, res) {
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.end("Hello, World!\n\n💚 🔒.js");
+});
 //app.listen(5000);
 //Обработка собитий socket.IO
-io.on("connect", (socket) => {
+io.on("connection", (socket) => {
   //Подключение пользователя к комнате
   socket.on("join", async ({ name, room_id, secret }, callback) => {
 
