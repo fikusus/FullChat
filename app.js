@@ -19,7 +19,7 @@ const mongoClient = require("mongodb").MongoClient;
 
 //Настройка сервера из config файла
 const oneseLoadedMessage = config.onesLoadedMessage; //Количество подгружаемих сообщений за раз;
-const url = config.databaseUrlLOCAL; //Ссылка на подключение к базе данных;
+const url = config.databaseUrlMIX; //Ссылка на подключение к базе данных;
 
 //Переменние для работи с БД
 var roombase; //Переменная подключение к базе сообщений;
@@ -38,8 +38,6 @@ mongoClient.connect(
   }
 );
 
-
-
 /*
     Настройка веб сервера
 */
@@ -54,17 +52,13 @@ function httpsWorker(glx) {
   app.use("/files", express.static("public"));
   glx.serveApp(app);
 
-
-/*
+  /*
     Обработка событий socket.io
-*/
+  */
   io.on("connection", (socket) => {
-    
-
-
-/*
-    Обработка запроса на подключение нового пользователя
-*/
+    /*
+        Обработка запроса на подключение нового пользователя
+    */
     socket.on("join", async ({ name, room_id, secret }, callback) => {
       //Проверка пользователя по ключу
       let hmac = CryptoJS.HmacSHA256(name + room_id, "UV/LED").toString(
@@ -108,9 +102,10 @@ function httpsWorker(glx) {
     });
 
 
-/*
-    Обработка нового собщения
-*/
+
+    /*
+        Обработка нового собщения
+    */
     socket.on("sendMessage", async ({ message, messageType }, callback) => {
       const user = getUser(socket.id); //Получаем отправителя
       let currDate = new Date(); //Время получения сообщения
@@ -120,11 +115,12 @@ function httpsWorker(glx) {
         text: message,
         messageType: messageType,
         sendDate: currDate,
-      };//Данные для занесения в БД
+      }; //Данные для занесения в БД
       await roombase
         .collection(user.room)
-        .insertOne(serverMesage, function () {});//Запись в БД
+        .insertOne(serverMesage, function () {}); //Запись в БД
 
+      //Уведомить пользователей о новом сообщении
       let Message = await roombase.collection(user.room);
       let users = clients.filter((client) => client.room === user.room);
       let colOfMessage = await Message.countDocuments();
@@ -145,6 +141,8 @@ function httpsWorker(glx) {
           element.res.write(data);
         }
       });
+
+      //Отправить текст собщения остальным пользователям
       io.to(user.room).emit("message", {
         user: user.name,
         text: message,
@@ -154,7 +152,6 @@ function httpsWorker(glx) {
 
       callback();
     });
-
 
     /*
     Обработка событий socket.io
@@ -180,8 +177,7 @@ function httpsWorker(glx) {
       }
     };
 
-
-/*
+    /*
     Обработка событий socket.io
 */
     const saveReadedMsa = async (name, room) => {
@@ -195,9 +191,7 @@ function httpsWorker(glx) {
         .findOneAndUpdate({}, { $set: serverMesage }, function () {});
     };
 
-
-
-/*
+    /*
     Обработка событий socket.io
 */
     socket.on("load-old", async (col) => {
@@ -218,24 +212,23 @@ function httpsWorker(glx) {
       socket.emit("loaded-old-message", { message, col });
     });
 
-
-        /*
+    /*
     Обработка событий socket.io
 */
-socket.on("disconnect", async () => {
-    const user = removeUser(socket.id);
+    socket.on("disconnect", async () => {
+      const user = removeUser(socket.id);
 
-    if (user) {
-      if (user.opend) {
-        await saveReadedMsa(user.name, user.room);
+      if (user) {
+        if (user.opend) {
+          await saveReadedMsa(user.name, user.room);
+        }
+
+        io.to(user.room).emit("roomData", {
+          room: user.room,
+          users: getUsersInRoom(user.room),
+        });
       }
-
-      io.to(user.room).emit("roomData", {
-        room: user.room,
-        users: getUsersInRoom(user.room),
-      });
-    }
-  });
+    });
   });
 
   app.post("/sendServiceMessage", async (req, res) => {
@@ -271,6 +264,7 @@ socket.on("disconnect", async () => {
   let clients = [];
 
   app.get("/stream/:name&:room", async function (req, res) {
+      console.log("Stream");
     const headers = {
       "Content-Type": "text/event-stream",
       Connection: "keep-alive",
