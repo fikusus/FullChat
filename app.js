@@ -191,7 +191,7 @@ function httpsWorker(glx) {
     let currDate = new Date(); //Время получения сообщения
 
     let serverMesage = {
-      name: username,
+      user: username,
       text: message,
       type: type,
       date: currDate,
