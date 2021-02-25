@@ -273,8 +273,8 @@ function httpsWorker(glx) {
     const intervalId = setInterval(() => {
       res.flushHeaders();
     }, 60 * 1000);
-    //let unr = await countUnreaded(req.params.name, req.params.room);
-    const data = `data: ${JSON.stringify(10)}\n\n`;
+    let unr = await countUnreaded(req.params.name, req.params.room);
+    const data = `data: ${JSON.stringify(unr)}\n\n`;
     res.write(data);
     req.on("close", () => {
       clients = clients.filter((c) => c.id !== clientId);
@@ -283,12 +283,13 @@ function httpsWorker(glx) {
   });
 
   const countUnreaded = async (name, room, max) => {
-    let Message = await roombase.collection(room);
-    let User = await userbase.collection("user_unreaded_messages");
+    console.log("Start");
+    let Message =  roombase.collection(room);
+    let User =  userbase.collection("user_unreaded_messages");
 
     let colOfMessage = max ? max : await Message.countDocuments();
     let col = colOfMessage;
-    let userInfo = await User.findOne({username:name, room:room});
+    let userInfo =  User.findOne({username:name, room:room});
     
     console.log(userInfo);
 
