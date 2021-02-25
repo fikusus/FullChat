@@ -283,7 +283,7 @@ function httpsWorker(glx) {
 
   const countUnreaded = async (name, room, max) => {
     let Message = await roombase.collection(room);
-    let User = await userbase.collection(name + " in " + room);
+    let User = await userbase.collection("user_unreaded_messages");
 
     let colOfMessage = max ? max : await Message.countDocuments();
     let col = colOfMessage;
@@ -291,19 +291,19 @@ function httpsWorker(glx) {
 
     console.log(userInfo);
 
-   /* if (!userInfo) {
+    if (!userInfo) {
       let serverMesage = {
+        username:name,
+        room:room,
         lastread: col,
       };
       await User.insertOne(serverMesage, function () {});
-
       return 0;
     } else {
       userInfo = userInfo.lastread;
       let unreaded = colOfMessage - userInfo;
       return unreaded;
-    }*/
-    return 0;
+    }
   };
 }
 module.exports = httpsWorker;
