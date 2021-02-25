@@ -253,6 +253,7 @@ function httpsWorker(glx) {
   let clients = [];
 
   app.get("/stream/:name&:room",cors(corsOptions), async function (req, res) {
+    console.log("Stream");
     const headers = {
       "Content-Type": "text/event-stream",
       Connection: "keep-alive",
