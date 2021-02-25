@@ -1,6 +1,5 @@
 'use strict';
 
-var httpsWorker = require('./app.js');
 
 require('greenlock-express')
     .init({
