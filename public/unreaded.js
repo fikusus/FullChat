@@ -4,8 +4,6 @@ let parametrs = JSON.parse(
   document.currentScript.getAttribute("data-chat-options")
 );
 
-
-
 let out_link =
   base_link +
   "?name=" +
@@ -17,8 +15,6 @@ let out_link =
   "&secret=" +
   parametrs.room_key;
 
-
-  console.log(out_link)
 var name = parametrs.person;
 var room = parametrs.room_id;
 
@@ -54,8 +50,6 @@ button_main.innerHTML =
   "'><a  href='#demo-modal' class='btn-floating modal-trigger btn-large red'><i class='material-icons'>mode_comment</i></a></div>";
 
 let div_btn = document.getElementById("open-modal-chat-btn");
-
-$("#" + button_id).one("click", function () {});
 
 let cliked_times = 0;
 $("#" + button_id).on("click", function () {
