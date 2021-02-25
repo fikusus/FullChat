@@ -287,9 +287,8 @@ function httpsWorker(glx) {
 
     let colOfMessage = max ? max : await Message.countDocuments();
     let col = colOfMessage;
-    let data = await User.findOne({username:name, room:room});
+    let userInfo = await User.findOne({username:name, room:room});
     
-    let userInfo = data.lastread;
     console.log(userInfo);
 
     if (!userInfo) {
