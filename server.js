@@ -1,6 +1,6 @@
 'use strict';
 
-var app = require('./app.js');
+var httpsWorker = require('./app.js');
 
 require('greenlock-express')
     .init({
@@ -17,4 +17,4 @@ require('greenlock-express')
     })
     // Serves on 80 and 443
     // Get's SSL certificates magically!
-    .serve(app);
+    .serve(httpsWorker);

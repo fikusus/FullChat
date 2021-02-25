@@ -37,10 +37,12 @@ mongoClient.connect(
     userbase = await db.db("Users");
   }
 );
-
+function httpsWorker(glx) {
 //Настройка веб сервера
+
 const app = express();
-const server = https.createServer(app);
+var server = glx.httpsServer();
+//const server = https.createServer(app);
 const io = socketio(server);
 app.use(router);
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -285,5 +287,5 @@ const countUnreaded = async (name, room, max) => {
 /*server.listen(process.env.PORT || 5000, () =>
   console.log("Server has started.")
 );*/
-
+}
 module.exports = app;
