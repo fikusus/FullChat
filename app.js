@@ -1,6 +1,6 @@
 'use strict';
 //Подключение внешних зависимостей
-const https = require("https");
+const http = require("http");
 const express = require("express");
 const socketio = require("socket.io");
 const cors = require("cors");
@@ -38,23 +38,20 @@ mongoClient.connect(
   }
 );
 
-function httpsWorker(glx) {
 //Настройка веб сервера
 const app = express();
-var server = glx.httpsServer();
-//const server = https.createServer(app);
+const server = http.createServer(app);
 const io = socketio(server, {
   cors: {
     origin: "http://193.242.166.32:5000",
     methods: ["GET", "POST"]
   }});
-
-
 app.use(router);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use('/files', express.static('public'));
 
+app.listen(5000);
 //Обработка собитий socket.IO
 io.on("connect", (socket) => {
   //Подключение пользователя к комнате
@@ -289,12 +286,8 @@ const countUnreaded = async (name, room, max) => {
   }
 };
 // eslint-disable-next-line no-undef
-server.listen(process.env.PORT || 5000, () =>
+/*server.listen(process.env.PORT || 443, () =>
   console.log("Server has started.")
-);
-}
+);*/
 
-module.exports = httpsWorker;
-
-
-
+module.exports = app;
