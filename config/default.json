@@ -1,0 +1,7 @@
+{
+  "databaseUrlMIX": "mongodb://mix-chat:Szz6tvoAmusogdjW1nLjXQYCMkkpBtHrZnr9aAfWblifSH3BqEQsJkuuqE5HFpUyjB4zBkmjOW042GocAMVVRQ==@mix-chat.mongo.cosmos.azure.com:10255/?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@mix-chat@",
+
+  "databaseUrlLOCAL":"mongodb://localhost:27017/",
+
+  "onesLoadedMessage":30
+}
