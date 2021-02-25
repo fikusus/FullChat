@@ -42,10 +42,10 @@ if (!unreaded) {
 let head = window.document.getElementsByTagName("head")[0];
 
 let aFile = "https://chat.tss2020.site/files/modalStyle.css";
-let style = window.document.createElement("link");
-style.href = aFile;
-style.rel = "stylesheet";
-head.appendChild(style);
+let astyle = window.document.createElement("link");
+astyle.href = aFile;
+astyle.rel = "stylesheet";
+head.appendChild(astyle);
 
 let button_main = document.getElementById(button_id);
 button_main.innerHTML =
@@ -95,6 +95,7 @@ function reconnect() {
     "https://chat.tss2020.site/stream/" + name + "&" + room
   );
   eventSource.onmessage = function (event) {
+    console.log(event.data);
     saveInCookie(event.data);
   };
 }
