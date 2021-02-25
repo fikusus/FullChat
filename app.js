@@ -196,7 +196,6 @@ function httpsWorker(glx) {
       type: type,
       date: currDate,
     }; //Данные для занесения в БД
-    console.log(serverMesage);
     await roombase.collection(room).insertOne(serverMesage, function () {}); //Запись в БД
 
     //Уведомить пользователей о новом сообщении
@@ -274,8 +273,6 @@ function httpsWorker(glx) {
     let colOfMessage = max ? max : await Message.countDocuments();
     let col = colOfMessage;
     let userInfo = await User.findOne({ username: name, room: room });
-
-    console.log(userInfo);
 
     if (!userInfo) {
       let serverMesage = {
