@@ -107,7 +107,7 @@ function httpsWorker(glx) {
     socket.on("sendMessage", async ({ message, messageType }, callback) => {
       const user = getUser(socket.id); //Получаем отправителя
 
-      await sendingMessage(user.username, user.room, message, messageType);
+      await sendingMessage(user.name, user.room, message, messageType);
 
       //Уведомляем отправителя об успешной отправке
       callback();
