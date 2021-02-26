@@ -3,5 +3,5 @@
 
   "databaseUrlLOCAL":"mongodb://localhost:27017/",
 
-  "onesLoadedMessage":30
+  "onesLoadedMessage":10
 }

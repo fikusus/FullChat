@@ -3,6 +3,7 @@
 */
 //Подключение внешних зависимостей
 const express = require("express");
+const http = require("http");
 const socketio = require("socket.io");
 const config = require("config");
 const router = require("./router");
@@ -12,11 +13,16 @@ const cors = require("cors");
 const { addUser, removeUser, getUser, getUsersInRoom } = require("./users");
 const mongoClient = require("mongodb").MongoClient;
 
+
+
+
+
 var corsOptions = {
   origin: "*",
   optionsSuccessStatus: 200,
 };
 let clients = [];
+let stat_clients = [];
 var roombase; //Переменная подключение к базе сообщений;
 var userbase; //Переменная подключение к базе непрочитанних сообщений пользователя;;
 
@@ -42,8 +48,14 @@ mongoClient.connect(
 */
 //Получение SSL сертификата
 function httpsWorker(glx) {
+
+  setInterval(() => {
+    sendStat();
+   }, 30000);
+
   const app = express();
-  var server = glx.httpsServer();
+  //var server = glx.httpsServer();
+  let server = http.createServer(app);
   const io = socketio(server);
   //app.use(cors);
   app.use(router);
@@ -51,7 +63,7 @@ function httpsWorker(glx) {
   app.use(bodyParser.json());
   app.use("/files", express.static("public"));
   glx.serveApp(app);
-
+  server.listen(5000);
   /*
     Обработка событий socket.io
   */
@@ -70,7 +82,11 @@ function httpsWorker(glx) {
         return;
       }
 
-      const { error, user } = addUser({ id: socket.id, name, room: room_id }); //Сохранение данных пользователя
+      const { error, user } = await addUser({
+        id: socket.id,
+        name,
+        room: room_id,
+      }); //Сохранение данных пользователя
       let Message = roombase.collection(room_id); //Получение списка сообщений конкретной комнаты
       if (error) return callback(error);
 
@@ -105,10 +121,19 @@ function httpsWorker(glx) {
         Обработка нового собщения
     */
     socket.on("sendMessage", async ({ message, messageType }, callback) => {
-      const user = getUser(socket.id); //Получаем отправителя
+      const user = await getUser(socket.id); //Получаем отправителя
+
+      let stat = roomsStatistic.find((element) => element.room === user.room);
+      if(stat){
+        let index = roomsStatistic.indexOf(stat);
+        roomsStatistic[index].col+= 1;
+
+      }else{
+        roomsStatistic.push({room:user.room,col:1});
+      }
+
 
       await sendingMessage(user.name, user.room, message, messageType);
-
       //Уведомляем отправителя об успешной отправке
       callback();
     });
@@ -124,9 +149,11 @@ function httpsWorker(glx) {
       Задание состояния модального окна
     */
     const resetOpend = async (status) => {
-      const user = getUser(socket.id);
-      user.opend = status;
-      await saveReadedMsa(user.name, user.room);
+      const user = await getUser(socket.id);
+      if (user) {
+        user.opend = status;
+        await saveReadedMsa(user.name, user.room);
+      }
     };
 
     /*
@@ -151,7 +178,7 @@ function httpsWorker(glx) {
       Подгрузка нового блока старых сообщений
     */
     socket.on("load-old", async (col) => {
-      const user = getUser(socket.id);
+      const user = await getUser(socket.id);
       let Message = roombase.collection(user.room);
       let message;
       if (col <= oneseLoadedMessage) {
@@ -164,7 +191,6 @@ function httpsWorker(glx) {
           .skip(col)
           .toArray();
       }
-
       socket.emit("loaded-old-message", { message, col });
     });
 
@@ -187,7 +213,7 @@ function httpsWorker(glx) {
     });
   });
 
-  const sendingMessage = async ( username, room, message, type ) => {
+  const sendingMessage = async (username, room, message, type) => {
     let currDate = new Date(); //Время получения сообщения
 
     let serverMesage = {
@@ -257,10 +283,40 @@ function httpsWorker(glx) {
       res.flushHeaders();
     }, 60 * 1000);
 
-    await countUnreaded(req.params.name, req.params.room,null , res);
+    await countUnreaded(req.params.name, req.params.room, null, res);
 
     req.on("close", () => {
       clients = clients.filter((c) => c.id !== clientId);
+      clearInterval(intervalId);
+    });
+  });
+
+  app.get("/statisticstream", cors(corsOptions), async function (req, res) {
+    const headers = {
+      "Content-Type": "text/event-stream",
+      Connection: "keep-alive",
+      "Cache-Control": "no-cache",
+    };
+    res.writeHead(200, headers);
+    res.write("\n");
+
+    const clientId = Date.now();
+    const newClient = {
+      id: clientId,
+      res: res,
+    };
+    stat_clients.push(newClient);
+
+
+    const intervalId = setInterval(() => {
+      res.flushHeaders();
+    }, 60 * 1000);
+
+    if(statusData)
+    res.write(statusData);
+
+    req.on("close", () => {
+      stat_clients = stat_clients.filter((c) => c.id !== clientId);
       clearInterval(intervalId);
     });
   });
@@ -290,5 +346,23 @@ function httpsWorker(glx) {
     const data = `data: ${JSON.stringify(unreaded)}\n\n`;
     receiver.write(data);
   };
+
+
+  let statusData;
+  let roomsStatistic = [];
+  const sendStat = async () => {
+
+
+    let data_to_send = {
+      online:Object.keys(io.sockets.sockets).length
+    } 
+
+    roomsStatistic.forEach(element => data_to_send[element.room] = element.col);
+    roomsStatistic = [];
+    statusData = `data: ${JSON.stringify(data_to_send)}\n\n`;
+    stat_clients.forEach(element => element.res.write(statusData));
+  }
 }
+
+
 module.exports = httpsWorker;
