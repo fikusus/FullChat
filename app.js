@@ -63,7 +63,7 @@ function httpsWorker(glx) {
   app.use(bodyParser.json());
   app.use("/files", express.static("public"));
   glx.serveApp(app);
-  server.listen(5000);
+  //server.listen(5000);
   /*
     Обработка событий socket.io
   */
