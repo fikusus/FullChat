@@ -56,7 +56,7 @@ function httpsWorker(glx) {
   var server = glx.httpsServer();
   //let server = http.createServer(app);
   const io = socketio(server);
-  app.use(cors);
+  //app.use(cors);
   app.use(router);
   app.use(bodyParser.urlencoded({ extended: false }));
   app.use(bodyParser.json());
