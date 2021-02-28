@@ -62,7 +62,7 @@ mongoClient.connect(
           }
           roomsStatistic.push(newRoom);
           if(i === names.length -1){
-            roomsStatistic.sort((a, b) => (a.col > b.col) ? 1 : -1)
+            roomsStatistic.sort((a, b) => (Number.parseInt(a.col) > Number.parseInt(b.col)) ? 1 : -1)
             console.log(roomsStatistic);
             setInterval(() => {
               sendStat();
