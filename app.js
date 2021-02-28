@@ -379,16 +379,19 @@ mongoClient.connect(
       online:Object.keys(io.sockets.sockets).length
     } 
 
-    roomsStatistic.forEach(element => data_to_send[element.room] = element.col);
+    for(let i = 0; i < roomsStatistic.length;i++){
+      data_to_send[element[i]] = element[i];
+    }
+
     statusData = `data: ${JSON.stringify(data_to_send)}\n\n`;
     stat_clients.forEach(element => element.res.write(statusData));
   }
   function compare( a, b ) {
     if ( a.col < b.col ){
-      return -1;
+      return 1;
     }
     if ( a.col > b.col ){
-      return 1;
+      return -1;
     }
     return 0;
   }
