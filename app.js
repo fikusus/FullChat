@@ -381,6 +381,7 @@ mongoClient.connect(
 
     for(let i = 0; i < roomsStatistic.length;i++){
       data_to_send[roomsStatistic[i].room] = roomsStatistic[i].col;
+      console.log(i + " " + data_to_send[i])
     }
     console.log(roomsStatistic);
    // console.log(JSON.stringify(data_to_send))
