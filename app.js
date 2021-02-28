@@ -380,10 +380,9 @@ mongoClient.connect(
     } 
 
     for(let i = 0; i < roomsStatistic.length;i++){
-      data_to_send[roomsStatistic[i].room] = roomsStatistic[i].col;
-      console.log(i + " " + data_to_send[i])
+      data_to_send[' ' + roomsStatistic[i].room] = roomsStatistic[i].col;
     }
-    console.log(roomsStatistic);
+    console.log(data_to_send);
    // console.log(JSON.stringify(data_to_send))
     statusData = `data: ${JSON.stringify(data_to_send)}\n\n`;
     stat_clients.forEach(element => element.res.write(statusData));
