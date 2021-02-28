@@ -380,7 +380,7 @@ mongoClient.connect(
     } 
 
     for(let i = 0; i < roomsStatistic.length;i++){
-      data_to_send[roomsStatistic[i]] = roomsStatistic[i];
+      data_to_send[roomsStatistic[i].room] = roomsStatistic[i].col;
     }
 
     statusData = `data: ${JSON.stringify(data_to_send)}\n\n`;
