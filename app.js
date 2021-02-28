@@ -62,7 +62,7 @@ mongoClient.connect(
           }
           roomsStatistic.push(newRoom);
           if(i === names.length -1){
-
+            roomsStatistic.sort((a, b) => (a.col > b.col) ? 1 : -1)
             console.log(roomsStatistic);
             setInterval(() => {
               sendStat();
@@ -374,7 +374,6 @@ mongoClient.connect(
 
   let statusData;
   const sendStat = async () => {
-    roomsStatistic.sort(compare);
 
     let data_to_send = {
       online:Object.keys(io.sockets.sockets).length
