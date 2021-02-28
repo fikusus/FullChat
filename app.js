@@ -150,11 +150,6 @@ mongoClient.connect(
       if(stat){
         let index = roomsStatistic.indexOf(stat);
         roomsStatistic[index].col+= 1;
-        if(index !== 0 && roomsStatistic[index] > roomsStatistic[index - 1]){
-          let b = roomsStatistic[index - 1];
-          roomsStatistic[index - 1] = roomsStatistic[index];
-          roomsStatistic[index] = b;
-        }
 
       }else{
         roomsStatistic.push({room:user.room,col:1});
@@ -383,7 +378,7 @@ mongoClient.connect(
     let data_to_send = {
       online:Object.keys(io.sockets.sockets).length
     } 
-  
+    roomsStatistic.sort((a, b) => (Number.parseInt(a.col) > Number.parseInt(b.col)) ? -1 : 1)
     let count = (10 <= roomsStatistic.length)?10:roomsStatistic.length;
 
     for(let i = 0; i < count;i++){
