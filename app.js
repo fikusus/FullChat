@@ -6,6 +6,7 @@ const express = require("express");
 const socketio = require("socket.io");
 const config = require("config");
 const router = require("./router");
+const http = require("http");
 const bodyParser = require("body-parser");
 const CryptoJS = require("crypto-js");
 const cors = require("cors");
@@ -24,10 +25,19 @@ let clients = [];
 let stat_clients = [];
 var roombase; //Переменная подключение к базе сообщений;
 var userbase; //Переменная подключение к базе непрочитанних сообщений пользователя;;
+let roomsStatistic = [];
 
 //Настройка сервера из config файла
 const oneseLoadedMessage = config.onesLoadedMessage; //Количество подгружаемих сообщений за раз;
 const url = config.databaseUrlLOCAL; //Ссылка на подключение к базе данных;
+
+
+
+/*
+    Настройка веб сервера
+*/
+//Получение SSL сертификата
+function httpsWorker(glx) {
 
 //Установка соиденения с базой данных
 mongoClient.connect(
@@ -39,18 +49,30 @@ mongoClient.connect(
     }
     roombase = await db.db("Rooms");
     userbase = await db.db("Users");
+
+    roombase.listCollections().toArray(async function (err, names) {
+      if (err) {
+        console.log(err);
+      } else {
+        for ( let i = 0; i < names.length;i++){
+          let temp = await roombase.collection(names[i].name).countDocuments();
+          let newRoom = {
+            room:names[i].name,
+            col:temp
+          }
+          roomsStatistic.push(newRoom);
+          if(i === names.length -1){
+            setInterval(() => {
+              sendStat();
+             }, 30000);
+          
+          }
+        }
+      }
+    });
   }
 );
 
-/*
-    Настройка веб сервера
-*/
-//Получение SSL сертификата
-function httpsWorker(glx) {
-
-  setInterval(() => {
-    sendStat();
-   }, 30000);
 
   const app = express();
   var server = glx.httpsServer();
@@ -348,7 +370,6 @@ function httpsWorker(glx) {
 
 
   let statusData;
-  let roomsStatistic = [];
   const sendStat = async () => {
 
 
@@ -357,7 +378,6 @@ function httpsWorker(glx) {
     } 
 
     roomsStatistic.forEach(element => data_to_send[element.room] = element.col);
-    roomsStatistic = [];
     statusData = `data: ${JSON.stringify(data_to_send)}\n\n`;
     stat_clients.forEach(element => element.res.write(statusData));
   }

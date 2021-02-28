@@ -1,5 +1,5 @@
 eventSource = new EventSource(
-    "https://chat.tss2020.site/statisticstream/"
+    "http://localhost:5000/statisticstream/"
   );
   eventSource.onmessage = function (event) {
       let data = JSON.parse(event.data);
