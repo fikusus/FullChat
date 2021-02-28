@@ -62,11 +62,11 @@ mongoClient.connect(
           }
           roomsStatistic.push(newRoom);
           if(i === names.length -1){
-            roomsStatistic.sort((a, b) => (Number.parseInt(a.col) > Number.parseInt(b.col)) ? 1 : -1)
-            console.log(roomsStatistic);
+            roomsStatistic.sort((a, b) => (Number.parseInt(a.col) > Number.parseInt(b.col)) ? -1 : 1)
+            sendStat();
             setInterval(() => {
               sendStat();
-             }, 1000);
+             }, 30000);
           
           }
         }
@@ -382,8 +382,6 @@ mongoClient.connect(
     for(let i = 0; i < roomsStatistic.length;i++){
       data_to_send[' ' + roomsStatistic[i].room] = roomsStatistic[i].col;
     }
-    console.log(data_to_send);
-   // console.log(JSON.stringify(data_to_send))
     statusData = `data: ${JSON.stringify(data_to_send)}\n\n`;
     stat_clients.forEach(element => element.res.write(statusData));
   }
