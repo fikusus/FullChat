@@ -62,6 +62,7 @@ mongoClient.connect(
           }
           roomsStatistic.push(newRoom);
           if(i === names.length -1){
+            roomsStatistic.sort(compare);
             setInterval(() => {
               sendStat();
              }, 30000);
@@ -381,7 +382,18 @@ mongoClient.connect(
     statusData = `data: ${JSON.stringify(data_to_send)}\n\n`;
     stat_clients.forEach(element => element.res.write(statusData));
   }
+  function compare( a, b ) {
+    if ( a.col < b.col ){
+      return -1;
+    }
+    if ( a.col > b.col ){
+      return 1;
+    }
+    return 0;
+  }
+  
 }
+
 
 
 module.exports = httpsWorker;
